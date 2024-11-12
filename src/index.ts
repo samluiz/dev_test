@@ -34,11 +34,51 @@ const initializeDatabase = async () => {
 initializeDatabase();
 
 app.post('/users', async (req, res) => {
-// Crie o endpoint de users
+  let savedUser = await AppDataSource.getRepository(User).findOne({ where: { email: req.body.email } });
+
+  if (savedUser) {
+    res.sendStatus(409);
+    res.json({ message: "User already exists" });
+    return;
+  }
+
+  savedUser = await AppDataSource.getRepository(User).save(req.body);
+  res.json(savedUser);
+  res.sendStatus(201);
 });
 
 app.post('/posts', async (req, res) => {
-// Crie o endpoint de posts
+  if (!req.body.userId) {
+    res.json({ message: "userId is required" });
+    res.sendStatus(400);
+    return;
+  }
+
+  if (!req.body.title || !req.body.description) {
+    res.json({ message: "title and description are required" });
+    res.sendStatus(400);
+    return;
+  }
+
+  let user: User | null = await AppDataSource.getRepository(User).findOne(req.body.userId);
+
+  if (!user) {
+    res.json({ message: `User with id ${req.body.userId} not found` });
+    res.sendStatus(404);
+    return;
+  }
+
+  let post: Post = {
+    id: null,
+    title: req.body.title,
+    description: req.body.description,
+    user: user
+  }
+
+  post = await AppDataSource.getRepository(Post).save(post);
+
+  res.json(post);
+  res.sendStatus(201);
 });
 
 const PORT = process.env.PORT || 3000;
