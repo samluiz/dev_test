@@ -1,8 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
 import { User } from "./User";
 
-//TODO Crie a entidade de Post
-
 @Entity()
 export class Post {
     @PrimaryGeneratedColumn()
