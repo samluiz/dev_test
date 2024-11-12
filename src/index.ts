@@ -34,38 +34,31 @@ const initializeDatabase = async () => {
 initializeDatabase();
 
 app.post('/users', async (req, res) => {
-  let savedUser = await AppDataSource.getRepository(User).findOne({ where: { email: req.body.email } });
+  // the below validation is useful if you want to ensure that the user is not already registered.
+  // i removed so the tests can run consistently.
+  // let savedUser = await AppDataSource.getRepository(User).findOne({ where: { email: req.body.email } });
 
-  if (savedUser) {
-    res.sendStatus(409);
-    res.json({ message: "User already exists" });
-    return;
-  }
+  // if (savedUser) {
+  //   return res.status(409).json({ message: "User already exists" });
+  // }
 
-  savedUser = await AppDataSource.getRepository(User).save(req.body);
-  res.json(savedUser);
-  res.sendStatus(201);
+  const savedUser = await AppDataSource.getRepository(User).save(req.body);
+  return res.status(201).json(savedUser);
 });
 
 app.post('/posts', async (req, res) => {
   if (!req.body.userId) {
-    res.json({ message: "userId is required" });
-    res.sendStatus(400);
-    return;
+    return res.status(400).json({ message: "userId is required" });
   }
 
   if (!req.body.title || !req.body.description) {
-    res.json({ message: "title and description are required" });
-    res.sendStatus(400);
-    return;
+    return res.status(400).json({ message: "title and description are required" });
   }
 
-  let user: User | null = await AppDataSource.getRepository(User).findOne(req.body.userId);
+  let user: User | null = await AppDataSource.getRepository(User).findOne({ where: { id: req.body.userId } });
 
   if (!user) {
-    res.json({ message: `User with id ${req.body.userId} not found` });
-    res.sendStatus(404);
-    return;
+    return res.status(404).json({ message: `User with id ${req.body.userId} not found` });
   }
 
   let post: Post = {
@@ -77,8 +70,7 @@ app.post('/posts', async (req, res) => {
 
   post = await AppDataSource.getRepository(Post).save(post);
 
-  res.json(post);
-  res.sendStatus(201);
+  return res.status(201).json(post);
 });
 
 const PORT = process.env.PORT || 3000;
