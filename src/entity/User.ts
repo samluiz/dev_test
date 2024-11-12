@@ -5,7 +5,7 @@ import { Post } from "./Post";
 export class User {
     
     @PrimaryGeneratedColumn()
-    id!: number;
+    id!: number | null;
 
     @Column({ type: "varchar", length: 100 })
     firstName!: string;
